@@ -1,0 +1,124 @@
+:root {
+  --bg: #060c1d;
+  --bg-grad: radial-gradient(circle at 10% 5%, #16336b 0%, #060c1d 42%);
+  --card: rgba(19, 33, 66, 0.72);
+  --ink: #e5ecff;
+  --muted: #a7b3d6;
+  --accent: #3fc6ff;
+  --line: rgba(145, 174, 245, 0.35);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  background: var(--bg-grad), var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.5rem 2rem 0.5rem;
+}
+
+.creator {
+  font-weight: 700;
+  color: var(--accent);
+  white-space: nowrap;
+}
+
+main {
+  padding: 0 2rem 2rem;
+  display: grid;
+  gap: 1rem;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 1rem;
+  box-shadow: 0 0 16px rgba(63, 198, 255, 0.15);
+  backdrop-filter: blur(5px);
+}
+
+.input-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+label {
+  font-size: 0.9rem;
+  color: var(--muted);
+  display: grid;
+  gap: 0.35rem;
+}
+
+input, select {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.55rem;
+  font-size: 1rem;
+  background: rgba(8, 19, 41, 0.85);
+  color: var(--ink);
+}
+
+.date-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+button {
+  background: linear-gradient(90deg, #00a9ff, #4479ff);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.table-wrap { overflow-x: auto; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  padding: 0.55rem;
+}
+
+thead th, tfoot th, tfoot td {
+  background: rgba(45, 73, 130, 0.35);
+}
+
+td input {
+  width: 100%;
+  min-width: 130px;
+}
+
+tfoot tr th,
+tfoot tr td {
+  font-weight: 700;
+}
+
+@media (max-width: 700px) {
+  .app-header {
+    flex-direction: column;
+  }
+
+  .creator {
+    white-space: normal;
+  }
+}
