@@ -2,15 +2,15 @@ const MONTH_NAMES = [
   'January', 'February', 'March', 'April', 'May', 'June',
   'July', 'August', 'September', 'October', 'November', 'December'
 ];
+const STORAGE_KEY = 'budgetForecastStateV1';
 
 const startMonthInput = document.getElementById('startMonth');
 const startYearInput = document.getElementById('startYear');
 const endMonthInput = document.getElementById('endMonth');
 const endYearInput = document.getElementById('endYear');
-const startDateInput = document.getElementById('startDate');
-const endDateInput = document.getElementById('endDate');
 const initialBalanceInput = document.getElementById('initialBalance');
 const defaultIncomeInput = document.getElementById('defaultIncome');
+const defaultExpenseInput = document.getElementById('defaultExpense');
 const generateBtn = document.getElementById('generateBtn');
 const tableBody = document.querySelector('#forecastTable tbody');
 const balanceHeading = document.getElementById('balanceHeading');
@@ -41,7 +41,7 @@ function applyFormattedValue(input) {
 function bindFormattedInput(input, onInput) {
   applyFormattedValue(input);
   input.addEventListener('focus', () => {
-    input.value = parseNumber(input.value) || input.value === '0' ? String(parseNumber(input.value)) : '';
+    input.value = String(parseNumber(input.value));
   });
   input.addEventListener('blur', () => applyFormattedValue(input));
   input.addEventListener('input', onInput);
@@ -74,6 +74,28 @@ function fmtMonth(yyyyMm) {
   return `${MONTH_NAMES[m - 1]} ${y}`;
 }
 
+function saveState() {
+  const rows = [...tableBody.querySelectorAll('tr')].map((row) => ({
+    month: row.dataset.month,
+    income: parseNumber(row.querySelector('.income').value),
+    monthlyExpense: parseNumber(row.querySelector('.monthly-expense').value),
+    specialExpense: parseNumber(row.querySelector('.special-expense').value)
+  }));
+
+  const state = {
+    startMonth: startMonthInput.value,
+    startYear: startYearInput.value,
+    endMonth: endMonthInput.value,
+    endYear: endYearInput.value,
+    initialBalance: parseNumber(initialBalanceInput.value),
+    defaultIncome: parseNumber(defaultIncomeInput.value),
+    defaultExpense: parseNumber(defaultExpenseInput.value),
+    rows
+  };
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+}
+
 function recalculateTotals() {
   let rollingBalance = parseNumber(initialBalanceInput.value);
   let totalIncome = 0;
@@ -104,9 +126,10 @@ function recalculateTotals() {
   totalNetChangeCell.textContent = formatCurrency(totalNetChange);
   finalBalanceCell.textContent = formatCurrency(rollingBalance);
   balanceHeading.textContent = `Current Forecasted Ending Balance: ${formatCurrency(rollingBalance)}`;
+  saveState();
 }
 
-function buildTable() {
+function buildTable(customRows = null) {
   const start = getYearMonth(startYearInput, startMonthInput);
   const end = getYearMonth(endYearInput, endMonthInput);
 
@@ -117,15 +140,23 @@ function buildTable() {
 
   const months = monthSequence(start, end);
   const defaultIncome = parseNumber(defaultIncomeInput.value);
+  const defaultExpense = parseNumber(defaultExpenseInput.value);
 
   tableBody.innerHTML = '';
-  months.forEach((m) => {
+  months.forEach((m, idx) => {
+    const restored = customRows?.find((row) => row.month === m);
+    const income = restored ? restored.income : defaultIncome;
+    const monthlyExpense = restored ? restored.monthlyExpense : defaultExpense;
+    const specialExpense = restored ? restored.specialExpense : 0;
+
     const row = document.createElement('tr');
+    row.dataset.month = m;
     row.innerHTML = `
       <td>${fmtMonth(m)}</td>
-      <td><input class="income" type="text" inputmode="decimal" value="${money.format(defaultIncome)}" /></td>
-      <td><input class="monthly-expense" type="text" inputmode="decimal" value="0" /></td>
-      <td><input class="special-expense" type="text" inputmode="decimal" value="0" /></td>
+      <td>${idx + 1}</td>
+      <td><input class="income" type="text" inputmode="decimal" value="${money.format(income)}" /></td>
+      <td><input class="monthly-expense" type="text" inputmode="decimal" value="${money.format(monthlyExpense)}" /></td>
+      <td><input class="special-expense" type="text" inputmode="decimal" value="${money.format(specialExpense)}" /></td>
       <td class="net-change">$0</td>
       <td class="ending-balance">$0</td>
     `;
@@ -154,7 +185,39 @@ function setupDatePickers() {
   endYearInput.value = String(currentYear + 1);
 }
 
+function restoreState() {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const state = JSON.parse(raw);
+    if (state.startMonth) startMonthInput.value = state.startMonth;
+    if (state.startYear) startYearInput.value = state.startYear;
+    if (state.endMonth) endMonthInput.value = state.endMonth;
+    if (state.endYear) endYearInput.value = state.endYear;
+    initialBalanceInput.value = String(state.initialBalance ?? 0);
+    defaultIncomeInput.value = String(state.defaultIncome ?? 0);
+    defaultExpenseInput.value = String(state.defaultExpense ?? 0);
+    applyFormattedValue(initialBalanceInput);
+    applyFormattedValue(defaultIncomeInput);
+    applyFormattedValue(defaultExpenseInput);
+    if (Array.isArray(state.rows) && state.rows.length > 0) {
+      buildTable(state.rows);
+    }
+  } catch (_error) {
+    localStorage.removeItem(STORAGE_KEY);
+  }
+}
+
 setupDatePickers();
 bindFormattedInput(initialBalanceInput, recalculateTotals);
-bindFormattedInput(defaultIncomeInput, () => {});
-generateBtn.addEventListener('click', buildTable);
+bindFormattedInput(defaultIncomeInput, saveState);
+bindFormattedInput(defaultExpenseInput, saveState);
+startMonthInput.addEventListener('change', saveState);
+startYearInput.addEventListener('change', saveState);
+endMonthInput.addEventListener('change', saveState);
+endYearInput.addEventListener('change', saveState);
+generateBtn.addEventListener('click', () => buildTable());
+restoreState();

@@ -40,6 +40,10 @@
             Default Monthly Income
             <input type="text" id="defaultIncome" inputmode="decimal" value="0" />
           </label>
+          <label>
+            Default Monthly Expense
+            <input type="text" id="defaultExpense" inputmode="decimal" value="0" />
+          </label>
         </div>
         <button id="generateBtn">Generate Forecast</button>
       </section>
@@ -51,6 +55,7 @@
             <thead>
               <tr>
                 <th>Month</th>
+                <th>Month Count</th>
                 <th>Monthly Income</th>
                 <th>Monthly Expenses</th>
                 <th>Special Expenses</th>
@@ -62,6 +67,7 @@
             <tfoot>
               <tr>
                 <th>Totals</th>
+                <th>-</th>
                 <th id="totalIncome">$0</th>
                 <th id="totalMonthlyExpenses">$0</th>
                 <th id="totalSpecialExpenses">$0</th>
