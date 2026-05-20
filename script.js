@@ -1,3 +1,12 @@
+const MONTH_NAMES = [
+  'January', 'February', 'March', 'April', 'May', 'June',
+  'July', 'August', 'September', 'October', 'November', 'December'
+];
+
+const startMonthInput = document.getElementById('startMonth');
+const startYearInput = document.getElementById('startYear');
+const endMonthInput = document.getElementById('endMonth');
+const endYearInput = document.getElementById('endYear');
 const startDateInput = document.getElementById('startDate');
 const endDateInput = document.getElementById('endDate');
 const initialBalanceInput = document.getElementById('initialBalance');
@@ -12,7 +21,35 @@ const totalSpecialExpensesCell = document.getElementById('totalSpecialExpenses')
 const totalNetChangeCell = document.getElementById('totalNetChange');
 const finalBalanceCell = document.getElementById('finalBalance');
 
-const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
+const money = new Intl.NumberFormat('en-US', { maximumFractionDigits: 2 });
+
+function formatCurrency(value) {
+  return `$${money.format(value)}`;
+}
+
+function parseNumber(value) {
+  const clean = String(value).replace(/,/g, '').trim();
+  const n = Number(clean);
+  return Number.isFinite(n) ? n : 0;
+}
+
+function applyFormattedValue(input) {
+  const value = parseNumber(input.value);
+  input.value = money.format(value);
+}
+
+function bindFormattedInput(input, onInput) {
+  applyFormattedValue(input);
+  input.addEventListener('focus', () => {
+    input.value = parseNumber(input.value) || input.value === '0' ? String(parseNumber(input.value)) : '';
+  });
+  input.addEventListener('blur', () => applyFormattedValue(input));
+  input.addEventListener('input', onInput);
+}
+
+function getYearMonth(yearEl, monthEl) {
+  return `${yearEl.value}-${String(Number(monthEl.value) + 1).padStart(2, '0')}`;
+}
 
 function monthSequence(startMonth, endMonth) {
   const out = [];
@@ -32,14 +69,9 @@ function monthSequence(startMonth, endMonth) {
   return out;
 }
 
-function parseNumber(value) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
-}
-
 function fmtMonth(yyyyMm) {
   const [y, m] = yyyyMm.split('-').map(Number);
-  return new Date(y, m - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  return `${MONTH_NAMES[m - 1]} ${y}`;
 }
 
 function recalculateTotals() {
@@ -60,31 +92,26 @@ function recalculateTotals() {
     const net = income - monthly - special;
     rollingBalance += net;
 
-    row.querySelector('.net-change').textContent = money.format(net);
-    row.querySelector('.ending-balance').textContent = money.format(rollingBalance);
+    row.querySelector('.net-change').textContent = formatCurrency(net);
+    row.querySelector('.ending-balance').textContent = formatCurrency(rollingBalance);
   });
 
   const totalNetChange = totalIncome - totalMonthlyExpenses - totalSpecialExpenses;
 
-  totalIncomeCell.textContent = money.format(totalIncome);
-  totalMonthlyExpensesCell.textContent = money.format(totalMonthlyExpenses);
-  totalSpecialExpensesCell.textContent = money.format(totalSpecialExpenses);
-  totalNetChangeCell.textContent = money.format(totalNetChange);
-  finalBalanceCell.textContent = money.format(rollingBalance);
-  balanceHeading.textContent = `Current Forecasted Ending Balance: ${money.format(rollingBalance)}`;
+  totalIncomeCell.textContent = formatCurrency(totalIncome);
+  totalMonthlyExpensesCell.textContent = formatCurrency(totalMonthlyExpenses);
+  totalSpecialExpensesCell.textContent = formatCurrency(totalSpecialExpenses);
+  totalNetChangeCell.textContent = formatCurrency(totalNetChange);
+  finalBalanceCell.textContent = formatCurrency(rollingBalance);
+  balanceHeading.textContent = `Current Forecasted Ending Balance: ${formatCurrency(rollingBalance)}`;
 }
 
 function buildTable() {
-  const start = startDateInput.value;
-  const end = endDateInput.value;
-
-  if (!start || !end) {
-    alert('Please select both starting and end dates.');
-    return;
-  }
+  const start = getYearMonth(startYearInput, startMonthInput);
+  const end = getYearMonth(endYearInput, endMonthInput);
 
   if (start > end) {
-    alert('End date must be the same as or after the starting date.');
+    alert('The ending month must be the same as or after the starting month.');
     return;
   }
 
@@ -96,21 +123,38 @@ function buildTable() {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td>${fmtMonth(m)}</td>
-      <td><input class="income" type="number" step="0.01" value="${defaultIncome}" /></td>
-      <td><input class="monthly-expense" type="number" step="0.01" value="0" /></td>
-      <td><input class="special-expense" type="number" step="0.01" value="0" /></td>
-      <td class="net-change">$0.00</td>
-      <td class="ending-balance">$0.00</td>
+      <td><input class="income" type="text" inputmode="decimal" value="${money.format(defaultIncome)}" /></td>
+      <td><input class="monthly-expense" type="text" inputmode="decimal" value="0" /></td>
+      <td><input class="special-expense" type="text" inputmode="decimal" value="0" /></td>
+      <td class="net-change">$0</td>
+      <td class="ending-balance">$0</td>
     `;
     tableBody.appendChild(row);
   });
 
-  tableBody.querySelectorAll('input').forEach((input) => {
-    input.addEventListener('input', recalculateTotals);
-  });
-
+  tableBody.querySelectorAll('input').forEach((input) => bindFormattedInput(input, recalculateTotals));
   recalculateTotals();
 }
 
+function setupDatePickers() {
+  const currentYear = new Date().getFullYear();
+  for (let i = 0; i < 12; i += 1) {
+    startMonthInput.add(new Option(MONTH_NAMES[i], i));
+    endMonthInput.add(new Option(MONTH_NAMES[i], i));
+  }
+
+  for (let year = currentYear - 5; year <= currentYear + 20; year += 1) {
+    startYearInput.add(new Option(year, year));
+    endYearInput.add(new Option(year, year));
+  }
+
+  startMonthInput.value = String(new Date().getMonth());
+  startYearInput.value = String(currentYear);
+  endMonthInput.value = String(new Date().getMonth());
+  endYearInput.value = String(currentYear + 1);
+}
+
+setupDatePickers();
+bindFormattedInput(initialBalanceInput, recalculateTotals);
+bindFormattedInput(defaultIncomeInput, () => {});
 generateBtn.addEventListener('click', buildTable);
-initialBalanceInput.addEventListener('input', recalculateTotals);

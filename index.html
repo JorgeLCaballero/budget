@@ -10,7 +10,7 @@
     <header class="app-header">
       <div>
         <h1>Budget Forecast</h1>
-        <p>Forecast your monthly balance with editable income and expenses.</p>
+        <p>Plan your monthly cash flow with editable income and expenses.</p>
       </div>
       <div class="creator">Application created by Jorge Caballero</div>
     </header>
@@ -19,27 +19,33 @@
       <section class="controls card">
         <div class="input-grid">
           <label>
-            Starting Date
-            <input type="month" id="startDate" required />
+            Starting Month
+            <div class="date-picker" id="startPicker">
+              <select id="startMonth" aria-label="Starting month"></select>
+              <select id="startYear" aria-label="Starting year"></select>
+            </div>
           </label>
           <label>
-            End Date
-            <input type="month" id="endDate" required />
+            Ending Month
+            <div class="date-picker" id="endPicker">
+              <select id="endMonth" aria-label="Ending month"></select>
+              <select id="endYear" aria-label="Ending year"></select>
+            </div>
           </label>
           <label>
             Initial Balance
-            <input type="number" id="initialBalance" step="0.01" value="0" />
+            <input type="text" id="initialBalance" inputmode="decimal" value="0" />
           </label>
           <label>
-            Monthly Income (Default)
-            <input type="number" id="defaultIncome" step="0.01" value="0" />
+            Default Monthly Income
+            <input type="text" id="defaultIncome" inputmode="decimal" value="0" />
           </label>
         </div>
         <button id="generateBtn">Generate Forecast</button>
       </section>
 
       <section class="card">
-        <h2 id="balanceHeading">Current Forecasted Ending Balance: $0.00</h2>
+        <h2 id="balanceHeading">Current Forecasted Ending Balance: $0</h2>
         <div class="table-wrap">
           <table id="forecastTable" aria-label="Budget forecast table">
             <thead>
@@ -56,11 +62,11 @@
             <tfoot>
               <tr>
                 <th>Totals</th>
-                <th id="totalIncome">$0.00</th>
-                <th id="totalMonthlyExpenses">$0.00</th>
-                <th id="totalSpecialExpenses">$0.00</th>
-                <th id="totalNetChange">$0.00</th>
-                <th id="finalBalance">$0.00</th>
+                <th id="totalIncome">$0</th>
+                <th id="totalMonthlyExpenses">$0</th>
+                <th id="totalSpecialExpenses">$0</th>
+                <th id="totalNetChange">$0</th>
+                <th id="finalBalance">$0</th>
               </tr>
             </tfoot>
           </table>
