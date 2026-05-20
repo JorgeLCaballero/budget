@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Budget Forecast App</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div>
+        <h1>Budget Forecast</h1>
+        <p>Plan your monthly cash flow with editable income and expenses.</p>
+      </div>
+      <div class="creator">Application created by Jorge Caballero</div>
+    </header>
+
+    <main>
+      <section class="controls card">
+        <div class="input-grid">
+          <label>
+            Starting Month
+            <div class="date-picker" id="startPicker">
+              <select id="startMonth" aria-label="Starting month"></select>
+              <select id="startYear" aria-label="Starting year"></select>
+            </div>
+          </label>
+          <label>
+            Ending Month
+            <div class="date-picker" id="endPicker">
+              <select id="endMonth" aria-label="Ending month"></select>
+              <select id="endYear" aria-label="Ending year"></select>
+            </div>
+          </label>
+          <label>
+            Initial Balance
+            <input type="text" id="initialBalance" inputmode="decimal" value="0" />
+          </label>
+          <label>
+            Default Monthly Income
+            <input type="text" id="defaultIncome" inputmode="decimal" value="0" />
+          </label>
+        </div>
+        <button id="generateBtn">Generate Forecast</button>
+      </section>
+
+      <section class="card">
+        <h2 id="balanceHeading">Current Forecasted Ending Balance: $0</h2>
+        <div class="table-wrap">
+          <table id="forecastTable" aria-label="Budget forecast table">
+            <thead>
+              <tr>
+                <th>Month</th>
+                <th>Monthly Income</th>
+                <th>Monthly Expenses</th>
+                <th>Special Expenses</th>
+                <th>Net Change</th>
+                <th>Ending Balance</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+              <tr>
+                <th>Totals</th>
+                <th id="totalIncome">$0</th>
+                <th id="totalMonthlyExpenses">$0</th>
+                <th id="totalSpecialExpenses">$0</th>
+                <th id="totalNetChange">$0</th>
+                <th id="finalBalance">$0</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
